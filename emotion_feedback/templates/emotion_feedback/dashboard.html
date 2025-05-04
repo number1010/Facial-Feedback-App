@@ -1,0 +1,44 @@
+{% extends 'emotion_feedback/base.html' %}
+
+{% block title %}Dashboard - Emotion Feedback{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Feedback Dashboard</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>User</th>
+                                <th>Detected Emotion</th>
+                                <th>User Feedback</th>
+                                <th>Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feedback in feedback_list %}
+                            <tr>
+                                <td>{{ feedback.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>{{ feedback.user.username }}</td>
+                                <td>{{ feedback.detected_emotion }}</td>
+                                <td>{{ feedback.user_emotion }}</td>
+                                <td>{{ feedback.comments|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No feedback data available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

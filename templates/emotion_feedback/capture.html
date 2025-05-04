@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Capture Emotions - Facial Feedback{% endblock %}
+
+{% block extra_css %}
+<style>
+    #video-container {
+        position: relative;
+        width: 640px;
+        height: 480px;
+        margin: 0 auto;
+    }
+    #videoElement {
+        width: 100%;
+        height: 100%;
+        background-color: #666;
+    }
+    .emotion-overlay {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .capture-controls {
+        margin-top: 20px;
+        text-align: center;
+    }
+    .error-message {
+        color: #dc3545;
+        margin-top: 10px;
+        display: none;
+    }
+    .face-box {
+        position: absolute;
+        border: 2px solid #00ff00;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 text-center">
+        <h2 class="mb-4">Capture Your Emotions</h2>
+        
+        <div id="video-container">
+            <video id="videoElement" autoplay playsinline></video>
+            <div class="emotion-overlay" id="emotionDisplay" style="display: none;">
+                <span id="emotionText">Detecting...</span>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div id="confidenceBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div id="faceBox" class="face-box"></div>
+        </div>
+
+        <div class="capture-controls">
+            <button id="startButton" class="btn btn-primary">
+                <i class="fas fa-play me-2"></i>Start Camera
+            </button>
+            <button id="captureButton" class="btn btn-success" style="display: none;">
+                <i class="fas fa-camera me-2"></i>Capture Emotion
+            </button>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="mt-4" id="resultSection" style="display: none;">
+            <h3>Detected Emotion</h3>
+            <div class="card">
+                <div class="card-body">
+                    <h4 id="detectedEmotion">Processing...</h4>
+                    <p id="confidenceText" class="text-muted"></p>
+                    <a id="feedbackLink" class="btn btn-primary mt-3">
+                        <i class="fas fa-comment me-2"></i>Provide Feedback
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const videoElement = document.getElementById('videoElement');
+const startButton = document.getElementById('startButton');
+const captureButton = document.getElementById('captureButton');
+const emotionDisplay = document.getElementById('emotionDisplay');
+const emotionText = document.getElementById('emotionText');
+const confidenceBar = document.getElementById('confidenceBar');
+const resultSection = document.getElementById('resultSection');
+const detectedEmotion = document.getElementById('detectedEmotion');
+const confidenceText = document.getElementById('confidenceText');
+const feedbackLink = document.getElementById('feedbackLink');
+const errorMessage = document.getElementById('errorMessage');
+const faceBox = document.getElementById('faceBox');
+
+let stream = null;
+let sessionId = '{{ session_id }}';
+
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 5000);
+}
+
+startButton.addEventListener('click', async () => {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoElement.srcObject = stream;
+        startButton.style.display = 'none';
+        captureButton.style.display = 'inline-block';
+        emotionDisplay.style.display = 'block';
+    } catch (err) {
+        showError('Error accessing camera: ' + err.message);
+    }
+});
+
+captureButton.addEventListener('click', () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+    canvas.getContext('2d').drawImage(videoElement, 0, 0);
+    
+    const imageData = canvas.toDataURL('image/jpeg');
+    
+    // Show processing state
+    captureButton.disabled = true;
+    captureButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    
+    fetch('{% url "emotion_feedback:capture" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image: imageData,
+            session_id: sessionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            detectedEmotion.textContent = data.emotion.charAt(0).toUpperCase() + data.emotion.slice(1);
+            confidenceText.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+            resultSection.style.display = 'block';
+            feedbackLink.href = `/feedback/${data.session_id}/`;
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            videoElement.srcObject = null;
+            captureButton.style.display = 'none';
+            emotionDisplay.style.display = 'none';
+        } else {
+            showError(data.message || 'Error processing image');
+            captureButton.disabled = false;
+            captureButton.innerHTML = '<i class="fas fa-camera me-2"></i>Capture Emotion';
+        }
+    })
+    .catch(error => {
+        showError('Error processing image: ' + error.message);
+        captureButton.disabled = false;
+        captureButton.innerHTML = '<i class="fas fa-camera me-2"></i>Capture Emotion';
+    });
+});
+</script>
+{% endblock %} 

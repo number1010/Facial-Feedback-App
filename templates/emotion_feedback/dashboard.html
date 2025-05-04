@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Facial Feedback{% endblock %}
+
+{% block extra_css %}
+<style>
+    .emotion-stats {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+    }
+    .emotion-chart {
+        height: 300px;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Dashboard Phản Hồi Cảm Xúc</h2>
+    
+    {% if sessions %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Cảm xúc</th>
+                        <th>Độ tin cậy</th>
+                        <th>Đánh giá</th>
+                        <th>Nhận xét</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                        {% with emotion_feedback=session.emotionfeedback_set.first %}
+                            {% if emotion_feedback %}
+                                <tr>
+                                    <td>{{ session.created_at|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ emotion_feedback.emotion }}</td>
+                                    <td>{{ emotion_feedback.confidence|floatformat:1 }}%</td>
+                                    <td>
+                                        {% with user_feedback=session.userfeedback_set.first %}
+                                            {% if user_feedback %}
+                                                {{ user_feedback.rating }}/5
+                                            {% else %}
+                                                Chưa có
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        {% with user_feedback=session.userfeedback_set.first %}
+                                            {% if user_feedback %}
+                                                {{ user_feedback.comment|default:"Không có nhận xét" }}
+                                            {% else %}
+                                                Chưa có
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Chưa có phản hồi nào.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Add charts and visualizations here if needed
+</script>
+{% endblock %} 

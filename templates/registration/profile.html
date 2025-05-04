@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Thông tin tài khoản</h2>
+                    <div class="mt-4">
+                        <p><strong>Tên đăng nhập:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Ngày tham gia:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'password_change' %}" class="btn btn-primary">Đổi mật khẩu</a>
+                        <a href="{% url 'emotion_feedback:dashboard' %}" class="btn btn-secondary">Xem Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
