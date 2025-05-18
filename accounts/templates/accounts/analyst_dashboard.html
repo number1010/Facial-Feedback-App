@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Quản lý sản phẩm</h3>
+            <form method="get" class="mb-4" id="topic-filter-form">
+                <div class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label for="topic-select" class="col-form-label">Lọc theo đề tài:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select name="topic" id="topic-select" class="form-select" onchange="document.getElementById('topic-filter-form').submit();">
+                            <option value="all" {% if selected_topic_id == 'all' %}selected{% endif %}>Tất cả đề tài</option>
+                            {% for topic in topics %}
+                                <option value="{{ topic.id }}" {% if selected_topic_id == topic.id|stringformat:'s' %}selected{% endif %}>{{ topic.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                {% for product in products %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>Giá:</strong> {{ product.price }} VNĐ</p>
+                            <p class="card-text"><small class="text-muted">Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</small></p>
+                            <div class="d-grid gap-2 mb-2">
+                                <a href="{% url 'accounts:product_feedback' product.id %}" class="btn btn-info">Xem tất cả đánh giá</a>
+                                <a href="{% url 'accounts:edit_product' product.id %}" class="btn btn-warning">Sửa sản phẩm</a>
+                                <a href="{% url 'accounts:delete_product' product.id %}" class="btn btn-danger">Xóa sản phẩm</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <p class="text-center mb-0">Bạn chưa đăng sản phẩm nào.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

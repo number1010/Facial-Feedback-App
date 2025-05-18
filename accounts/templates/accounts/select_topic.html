@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-4">Chọn đề tài phân tích</h2>
+            <div class="row">
+                {% for topic in topics %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ topic.name }}</h5>
+                            <p class="card-text">{{ topic.description }}</p>
+                            <a href="{% url 'accounts:upload_product' topic.id %}" class="btn btn-primary">Chọn đề tài này</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            <p class="text-muted">Đề tài: {{ product.topic.name }}</p>
+            <p class="lead">{{ product.description }}</p>
+            <p class="h4 text-primary">{{ product.price }} VNĐ</p>
+            <p class="text-muted">Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Đánh giá sản phẩm</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Emotion Capture Section -->
+                    <div class="mb-4">
+                        <h5>Bước 1: Chụp ảnh khuôn mặt</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <video id="videoElement" width="100%" autoplay></video>
+                                <canvas id="canvas" style="display: none;"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="captured-image" class="text-center" style="display: none;">
+                                    <img id="snapshot" class="img-fluid rounded mb-2" alt="Captured face">
+                                    <p id="emotion-result" class="lead" style="display: none;"></p>
+                                    <div id="emotion-error" class="text-danger mt-2" style="display: none;"></div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button id="capture-btn" class="btn btn-primary">Chụp ảnh</button>
+                                    <button id="retake-btn" class="btn btn-secondary" style="display: none;">Chụp lại</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rating Form -->
+                    <form method="post" id="feedback-form" style="display: none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="emotion" id="emotion-input">
+                        <input type="hidden" name="emotion_image" id="emotion-image-input">
+                        <div class="mb-3">
+                            <label class="form-label">Đánh giá của bạn:</label>
+                            <div class="rating">
+                                {% for i in "54321" %}
+                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
+                                <label for="star{{ i }}">☆</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Nhận xét:</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    font-size: 30px;
+    color: #ddd;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.rating input:checked ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #ffd700;
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const videoElement = document.getElementById('videoElement');
+    const canvas = document.getElementById('canvas');
+    const snapshot = document.getElementById('snapshot');
+    const capturedImage = document.getElementById('captured-image');
+    const emotionResult = document.getElementById('emotion-result');
+    const emotionError = document.getElementById('emotion-error');
+    const feedbackForm = document.getElementById('feedback-form');
+    const emotionInput = document.getElementById('emotion-input');
+    const emotionImageInput = document.getElementById('emotion-image-input');
+    const captureBtn = document.getElementById('capture-btn');
+    const retakeBtn = document.getElementById('retake-btn');
+
+    let stream = null;
+
+    // Start video stream
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(s => {
+            stream = s;
+            videoElement.srcObject = stream;
+        })
+        .catch(err => {
+            alert("Không thể truy cập webcam. Vui lòng kiểm tra quyền truy cập.");
+        });
+
+    captureBtn.addEventListener('click', function() {
+        captureBtn.disabled = true;
+        emotionResult.textContent = "Đang nhận diện...";
+        emotionResult.style.display = 'block';
+        emotionError.textContent = "";
+        emotionError.style.display = 'none';
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        canvas.getContext('2d').drawImage(videoElement, 0, 0);
+
+        const imageData = canvas.toDataURL('image/jpeg');
+        fetch('{% url "emotion_feedback:save-emotion" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                image: imageData,
+                session_id: '{{ session_id }}'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                snapshot.src = imageData;
+                capturedImage.style.display = 'block';
+                captureBtn.style.display = 'none';
+                retakeBtn.style.display = 'block';
+                emotionResult.textContent = `Cảm xúc: ${data.emotion}`;
+                emotionResult.style.display = 'block';
+                emotionError.textContent = "";
+                emotionError.style.display = 'none';
+                emotionInput.value = data.emotion;
+                emotionImageInput.value = imageData;
+                feedbackForm.style.display = 'block';
+            } else {
+                emotionResult.textContent = "";
+                emotionResult.style.display = 'none';
+                emotionError.textContent = 'Không thể nhận diện cảm xúc. Vui lòng thử lại.';
+                emotionError.style.display = 'block';
+                captureBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            emotionResult.textContent = "";
+            emotionResult.style.display = 'none';
+            emotionError.textContent = 'Có lỗi xảy ra. Vui lòng thử lại.';
+            emotionError.style.display = 'block';
+            captureBtn.disabled = false;
+        });
+    });
+
+    retakeBtn.addEventListener('click', function() {
+        capturedImage.style.display = 'none';
+        captureBtn.style.display = 'block';
+        retakeBtn.style.display = 'none';
+        feedbackForm.style.display = 'none';
+        emotionResult.textContent = '';
+        emotionResult.style.display = 'none';
+        emotionError.textContent = '';
+        emotionError.style.display = 'none';
+        captureBtn.disabled = false;
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

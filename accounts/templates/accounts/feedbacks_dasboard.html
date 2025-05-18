@@ -1,0 +1,47 @@
+{% extends 'emotion_feedback/base.html' %}
+
+{% block title %}Tất cả đánh giá người dùng{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 text-primary">Tất Cả Đánh Giá Người Dùng</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>ID</th>
+                    <th>Người dùng</th>
+                    <th>Sản phẩm</th>
+                    <th>Rating</th>
+                    <th>Cảm xúc</th>
+                    <th>Bình luận</th>
+                    <th>Ngày gửi</th>
+                    <th>Ảnh cảm xúc</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feedback in feedback_list %}
+                <tr>
+                    <td>{{ feedback.id }}</td>
+                    <td>{{ feedback.user.username }}</td>
+                    <td>{% if feedback.product %}{{ feedback.product.name }}{% else %}Không có sản phẩm{% endif %}</td>
+                    <td>{{ feedback.rating }}/5</td>
+                    <td>{{ feedback.emotion|title }}</td>
+                    <td>{{ feedback.comment|default:"-" }}</td>
+                    <td>{{ feedback.submitted_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if feedback.emotion_image %}
+                            <img src="{{ feedback.emotion_image.url|default:feedback.emotion_image }}" style="max-width:60px;max-height:60px;" alt="Emotion Image">
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">Chưa có đánh giá nào.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

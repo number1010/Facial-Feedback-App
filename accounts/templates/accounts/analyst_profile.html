@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Thông tin cá nhân</h4>
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'accounts:select_topic' %}" class="btn btn-primary">Đăng sản phẩm mới</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <h3>Quản lý sản phẩm</h3>
+            <div class="row">
+                {% for product in products %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>Giá:</strong> {{ product.price }} VNĐ</p>
+                            <p class="card-text"><small class="text-muted">Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</small></p>
+                            
+                            <!-- Đánh giá sản phẩm -->
+                            <div class="mb-3">
+                                <h6>Đánh giá từ người dùng:</h6>
+                                {% if product.feedback_set.all %}
+                                    {% for feedback in product.feedback_set.all %}
+                                    <div class="card mb-2">
+                                        <div class="card-body py-2">
+                                            <p class="card-text mb-1">{{ feedback.comment }}</p>
+                                            <small class="text-muted">Đánh giá: {{ feedback.rating }}/5</small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted">Chưa có đánh giá nào</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Nút quản lý -->
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'accounts:edit_product' product.id %}" class="btn btn-warning">Sửa sản phẩm</a>
+                                <a href="{% url 'accounts:delete_product' product.id %}" class="btn btn-danger">Xóa sản phẩm</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <p class="text-center mb-0">Bạn chưa đăng sản phẩm nào. Hãy bắt đầu bằng cách nhấn nút "Đăng sản phẩm mới"!</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

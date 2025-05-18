@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Tất cả đánh giá cho sản phẩm: {{ product.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Mô tả:</strong> {{ product.description }}</p>
+                    <p><strong>Giá:</strong> {{ product.price }} VNĐ</p>
+                    <p><strong>Ngày đăng:</strong> {{ product.created_at|date:"d/m/Y" }}</p>
+                    <hr>
+                    <h5>Danh sách đánh giá:</h5>
+                    {% if feedbacks %}
+                        {% for feedback in feedbacks %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <p class="mb-1">{{ feedback.comment }}</p>
+                                <small class="text-muted">Đánh giá: {{ feedback.rating }}/5 | Ngày: {{ feedback.submitted_at|date:"d/m/Y H:i" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                    {% endif %}
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'accounts:analyst_dashboard' %}" class="btn btn-secondary">Quay lại quản lý sản phẩm</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h2 class="mb-4">Cảm ơn bạn!</h2>
+            <p class="lead">Cảm ơn bạn đã tham gia đánh giá cảm xúc. Phản hồi của bạn rất có giá trị đối với chúng tôi.</p>
+            <div class="mt-4">
+                <a href="{% url 'emotion_feedback:home' %}" class="btn btn-primary">Quay về trang chủ</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

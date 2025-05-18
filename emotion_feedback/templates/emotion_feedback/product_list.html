@@ -1,0 +1,45 @@
+{% extends 'emotion_feedback/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="mb-4">Danh sách sản phẩm</h3>
+    <form method="get" class="mb-4" id="topic-filter-form">
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label for="topic-select" class="col-form-label">Lọc theo đề tài:</label>
+            </div>
+            <div class="col-auto">
+                <select name="topic" id="topic-select" class="form-select" onchange="document.getElementById('topic-filter-form').submit();">
+                    <option value="all" {% if selected_topic_id == 'all' %}selected{% endif %}>Tất cả đề tài</option>
+                    {% for topic in topics %}
+                        <option value="{{ topic.id }}" {% if selected_topic_id == topic.id|stringformat:'s' %}selected{% endif %}>{{ topic.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description|truncatechars:100 }}</p>
+                    <p class="card-text"><strong>Giá:</strong> {{ product.price }} VNĐ</p>
+                    <p class="card-text"><small class="text-muted">Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</small></p>
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'emotion_feedback:product_detail' product.id %}" class="btn btn-primary">Xem chi tiết / Đánh giá</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <p class="text-center mb-0">Không có sản phẩm nào.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

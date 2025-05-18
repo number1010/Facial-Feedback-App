@@ -1,0 +1,53 @@
+{% extends 'emotion_feedback/base.html' %}
+
+
+{% block title %}Dashboard - Emotion Feedback{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 text-primary">Đánh Giá Của Tôi</h2>
+
+    {% if messages %}
+    <div class="messages mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        {% for feedback in feedback_list %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title mb-2 text-success">
+                        {% if feedback.product %}{{ feedback.product.name }}{% else %}Không có sản phẩm{% endif %}
+                    </h5>
+                    <p class="mb-1"><span class="fw-semibold">Rating:</span> {{ feedback.rating }}/5</p>
+                    <p class="mb-1"><span class="fw-semibold">Emotion:</span> {{ feedback.emotion|title }}</p>
+                    <p class="mb-1"><span class="fw-semibold">Comment:</span> {{ feedback.comment|default:"-" }}</p>
+                    <p class="mb-2 text-muted" style="font-size: 0.95em;">
+                        <span class="fw-semibold">Ngày gửi:</span> {{ feedback.submitted_at|date:"d/m/Y H:i" }}
+                    </p>
+                    {% if feedback.emotion_image %}
+                    <img src="{{ feedback.emotion_image.url|default:feedback.emotion_image }}" class="img-fluid rounded mb-2" alt="Emotion Image">
+                    {% endif %}
+                    <form action="{% url 'emotion_feedback:delete_feedback' feedback.id %}" method="POST" class="mt-auto">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Bạn có chắc muốn xóa đánh giá này?')">
+                            Xóa đánh giá
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">Bạn chưa có đánh giá nào.</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
