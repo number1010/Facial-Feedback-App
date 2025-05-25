@@ -7,7 +7,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Đánh giá cho sản phẩm: {{ product.name }}</h2>
-                <a href="{% url 'accounts:analyst_dashboard' %}" class="btn btn-secondary">
+                <a href="{% url 'accounts:product_management' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
             </div>
@@ -92,7 +92,10 @@
                             <th style="width: 15%">Thời gian</th>
                             <th style="width: 15%">Cảm xúc</th>
                             <th style="width: 15%">Điểm đánh giá</th>
-                            <th style="width: 40%">Nhận xét</th>
+                            <th style="width: 35%">Nhận xét</th>
+                            {% if user.is_superuser %}
+                            <th style="width: 5%">Thao tác</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -129,6 +132,13 @@
                                 <em class="text-muted">Không có nhận xét</em>
                                 {% endif %}
                             </td>
+                            {% if user.is_superuser %}
+                            <td class="align-middle">
+                                <button class="btn btn-danger btn-sm" onclick="deleteFeedback({{ feedback.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                            {% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -207,4 +217,12 @@
     gap: 8px;
 }
 </style>
+
+<script>
+function deleteFeedback(feedbackId) {
+    if (confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) {
+        window.location.href = `/accounts/feedback/${feedbackId}/delete/`;
+    }
+}
+</script>
 {% endblock %} 

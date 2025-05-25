@@ -5,7 +5,11 @@ from django.contrib import messages
 from django.db.models import Avg, Count, Max, Min
 from .forms import UserRegistrationForm, ProductForm, UserLoginForm
 from .models import Topic, Product, User
+from emotion_feedback.models import UserFeedback
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+
+def is_market_researcher_or_superuser(user):
+    return user.is_staff or user.is_superuser
 
 # Create your views here.
 
@@ -48,7 +52,12 @@ def register(request):
             # Log the user in
             login(request, user)
             messages.success(request, 'Đăng ký tài khoản thành công!')
-            return redirect('emotion_feedback:home')
+            
+            # Redirect based on user role
+            if user.is_superuser or user.is_market_analyst:
+                return redirect('accounts:product_management')
+            else:
+                return redirect('emotion_feedback:product_list')
 
         except Exception as e:
             messages.error(request, str(e))
@@ -66,7 +75,11 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('emotion_feedback:home')
+                # Redirect based on user role
+                if user.is_superuser or user.is_market_analyst:
+                    return redirect('accounts:product_management')
+                else:
+                    return redirect('emotion_feedback:product_list')
             else:
                 error_message = 'Tên đăng nhập hoặc mật khẩu không đúng'
     else:
@@ -103,7 +116,7 @@ def upload_product(request, topic_id):
             product.topic = topic
             product.save()
             messages.success(request, 'Sản phẩm đã được đăng thành công!')
-            return redirect('accounts:analyst_dashboard')
+            return redirect('accounts:product_management')
     else:
         form = ProductForm()
     
@@ -114,31 +127,36 @@ def upload_product(request, topic_id):
 
 @login_required
 def delete_product(request, product_id):
-    if not request.user.is_market_analyst:
-        return redirect('emotion_feedback:home')
-    
-    product = get_object_or_404(Product, id=product_id, user=request.user)
+    # Allow superuser to delete any product, others can only delete their own
+    if request.user.is_superuser:
+        product = get_object_or_404(Product, id=product_id)
+    else:
+        product = get_object_or_404(Product, id=product_id, user=request.user)
     
     if request.method == 'POST':
         product.delete()
         messages.success(request, 'Sản phẩm đã được xóa thành công!')
-        return redirect('accounts:analyst_dashboard')
+        return redirect('accounts:product_management')
     
     return render(request, 'accounts/delete_product.html', {'product': product})
 
 @login_required
+@user_passes_test(is_market_researcher_or_superuser)
 def edit_product(request, product_id):
-    if not request.user.is_market_analyst:
-        return redirect('emotion_feedback:home')
-    
-    product = get_object_or_404(Product, id=product_id, user=request.user)
+    # Allow superuser to edit any product, others can only edit their own
+    if request.user.is_superuser:
+        product = get_object_or_404(Product, id=product_id)
+    else:
+        product = get_object_or_404(Product, id=product_id, user=request.user)
     
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
             messages.success(request, 'Sản phẩm đã được cập nhật thành công!')
-            return redirect('accounts:analyst_dashboard')
+            return redirect('accounts:product_management')
+        else:
+            messages.error(request, 'Vui lòng kiểm tra lại thông tin sản phẩm!')
     else:
         form = ProductForm(instance=product)
     
@@ -277,9 +295,6 @@ def product_statistics(request, product_id):
     
     return render(request, 'accounts/product_statistics.html', context)
 
-def is_market_researcher_or_superuser(user):
-    return user.is_staff or user.is_superuser
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.is_market_analyst)
 def product_management(request):
@@ -384,32 +399,6 @@ def product_stats(request, product_id):
 
 @login_required
 @user_passes_test(is_market_researcher_or_superuser)
-def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    if request.method == 'POST':
-        # Xử lý cập nhật sản phẩm
-        product.name = request.POST.get('name')
-        product.description = request.POST.get('description')
-        if 'image' in request.FILES:
-            product.image = request.FILES['image']
-        product.save()
-        messages.success(request, 'Cập nhật sản phẩm thành công!')
-        return redirect('accounts:product_management')
-    
-    return render(request, 'accounts/edit_product.html', {
-        'product': product
-    })
-
-@login_required
-@user_passes_test(is_market_researcher_or_superuser)
-def delete_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    product.delete()
-    messages.success(request, 'Xóa sản phẩm thành công!')
-    return redirect('accounts:product_management')
-
-@login_required
-@user_passes_test(is_market_researcher_or_superuser)
 def add_product(request):
     topics = Topic.objects.all()
     
@@ -443,6 +432,17 @@ def add_product(request):
     return render(request, 'accounts/add_product.html', {
         'topics': topics
     })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def delete_feedback(request, feedback_id):
+    feedback = get_object_or_404(UserFeedback, id=feedback_id)
+    product_id = feedback.product.id
+    
+    # Delete the feedback directly
+    feedback.delete()
+    messages.success(request, 'Đánh giá đã được xóa thành công!')
+    return redirect('accounts:view_feedback', product_id=product_id)
 
 # @login_required
 # def dashboard(request):

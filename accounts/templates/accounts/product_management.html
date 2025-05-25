@@ -5,9 +5,11 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">{% if is_superuser %}Quản lý tất cả sản phẩm{% else %}Quản lý sản phẩm của tôi{% endif %}</h2>
+        {% if not is_superuser %}
         <a href="{% url 'accounts:add_product' %}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Thêm sản phẩm
         </a>
+        {% endif %}
     </div>
 
     <!-- Filter by topic -->

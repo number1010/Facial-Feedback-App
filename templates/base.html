@@ -267,5 +267,59 @@
         }, 3000);
     });
     </script>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">
+                        <i class="fas fa-check-circle me-2"></i>Thành công
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    <p class="mt-3 mb-0" id="successMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to show success modal
+        function showSuccessModal(message) {
+            document.getElementById('successMessage').textContent = message;
+            var modalElement = document.getElementById('successModal');
+            var modal = new bootstrap.Modal(modalElement);
+            
+            // Xử lý sự kiện khi modal đóng
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                // Xóa backdrop
+                var backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                // Xóa class modal-open từ body
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            });
+            
+            modal.show();
+        }
+
+        // Check for success messages and show modal
+        document.addEventListener('DOMContentLoaded', function() {
+            var successMessages = document.querySelectorAll('.alert-success');
+            successMessages.forEach(function(message) {
+                showSuccessModal(message.textContent.trim());
+                message.remove(); // Remove the original message
+            });
+        });
+    </script>
 </body>
 </html> 

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision.transforms import transforms
 from torchvision.models import vit_b_16
+import os
 
 # Định nghĩa các lớp cảm xúc
 EMOTIONS = ['angry', 'disgusted', 'fearful', 'happy', 'neutral', 'sad', 'surprised']
@@ -16,22 +17,31 @@ transform = transforms.Compose([
 
 def load_vit_model(model_path):
     try:
+        print(f"Loading model from: {model_path}")
+        print(f"File exists: {os.path.exists(model_path)}")
+        
         # Tạo mô hình ViT-B/16 với số lớp phân loại bằng số cảm xúc
         model = vit_b_16()
         # Thay đổi lớp head để phù hợp với số lớp cảm xúc
         model.heads = nn.Linear(model.hidden_dim, len(EMOTIONS))
         
-        # Tải state dict
-        state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+        # Tải state dict với weights_only=True để tránh warning
+        state_dict = torch.load(model_path, map_location=torch.device('cpu'), weights_only=True)
+        print(f"State dict keys: {state_dict.keys() if isinstance(state_dict, dict) else 'Not a dict'}")
+        
         # Nếu state_dict được lưu dưới dạng OrderedDict, lấy state_dict từ nó
         if not isinstance(state_dict, dict):
             state_dict = state_dict.state_dict()
         
         model.load_state_dict(state_dict)
         model.eval()
+        print("Model loaded successfully")
         return model
     except Exception as e:
-        print(f"Error loading model: {e}")
+        print(f"Error loading model: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return None
 
 def predict_emotion(model, image):
@@ -52,5 +62,8 @@ def predict_emotion(model, image):
             
         return EMOTIONS[predicted_idx], confidence
     except Exception as e:
-        print(f"Error predicting emotion: {e}")
+        print(f"Error predicting emotion: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return None, None 

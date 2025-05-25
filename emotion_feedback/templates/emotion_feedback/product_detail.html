@@ -2,78 +2,78 @@
 {% load custom_filters %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row g-4">
-        <div class="col-md-6">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" class="img-fluid rounded product-image" alt="{{ product.name }}">
-            {% endif %}
-        </div>
-        <div class="col-md-6">
-            <div class="product-info p-3">
-                <h2 class="mb-2">{{ product.name }}</h2>
-                <p class="text-muted mb-2"><i class="fas fa-tag me-2"></i>{{ product.topic.name }}</p>
-                <p class="lead mb-3">{{ product.description }}</p>
-                <p class="h4 text-primary mb-2">{{ product.price|currency_vnd }}</p>
-                <p class="text-muted mb-3"><i class="fas fa-calendar me-2"></i>Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-8 mx-auto">
-            <div class="card">
-                <div class="card-header py-3">
-                    <h4 class="mb-0">Đánh giá sản phẩm</h4>
-                </div>
-                <div class="card-body">
-                    <!-- Emotion Capture Section -->
-                    <div class="mb-4">
-                        <h5 class="mb-3">Bước 1: Chụp ảnh khuôn mặt</h5>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <video id="videoElement" width="100%" class="rounded" autoplay></video>
-                                <canvas id="canvas" style="display: none;"></canvas>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Product Info Card -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-md-5 text-center">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" class="img-fluid rounded-4 border product-image-main mb-3" alt="{{ product.name }}">
+                            {% else %}
+                                <div class="no-image d-flex flex-column align-items-center justify-content-center rounded-4 border mb-3" style="height: 220px; background: #f4f6fb;">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                    <p class="text-muted mt-2">Không có hình ảnh</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-7">
+                            <h1 class="product-title mb-3 fw-bold text-dark">{{ product.name }}</h1>
+                            <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6"><i class="fas fa-tag me-1"></i>{{ product.topic.name }}</span>
+                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 fs-6"><i class="fas fa-money-bill-wave me-1"></i>{{ product.price|currency_vnd }}</span>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 fs-6"><i class="fas fa-calendar-alt me-1"></i>{{ product.created_at|date:"d/m/Y" }}</span>
                             </div>
-                            <div class="col-md-6">
-                                <div id="captured-image" class="text-center mb-3" style="display: none;">
-                                    <img id="snapshot" class="img-fluid rounded mb-2" alt="Captured face">
-                                    <p id="emotion-result" class="lead mb-0" style="display: none;"></p>
-                                    <div id="emotion-error" class="text-danger mt-2" style="display: none;"></div>
-                                </div>
-                                <div class="d-grid gap-2">
-                                    <button id="capture-btn" class="btn btn-primary">
-                                        <i class="fas fa-camera me-2"></i>Chụp ảnh
-                                    </button>
-                                    <button id="retake-btn" class="btn btn-secondary" style="display: none;">
-                                        <i class="fas fa-redo me-2"></i>Chụp lại
-                                    </button>
-                                </div>
+                            <div class="product-description mb-0 p-3 rounded-3 bg-light border">
+                                <h5 class="mb-2 text-secondary fw-semibold">Mô tả sản phẩm</h5>
+                                <p class="mb-0 text-dark">{{ product.description }}</p>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Rating Form -->
+                </div>
+            </div>
+            <!-- Emotion Feedback Card -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-semibold mb-3 text-primary"><i class="fas fa-smile me-2"></i>Đánh giá cảm xúc về sản phẩm</h4>
+                    <div class="camera-container position-relative rounded-4 overflow-hidden mb-3 bg-dark-subtle mx-auto" style="max-width: 480px;">
+                        <video id="video" class="camera-preview" autoplay style="border-radius: 16px;"></video>
+                        <img id="captured-image" class="camera-preview position-absolute top-0 start-0 w-100 h-100" style="display:none; object-fit:cover; border-radius:16px;" alt="Captured image">
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <div id="emotion-result" class="emotion-result"></div>
+                    </div>
+                    <div class="d-flex gap-2 mb-3 justify-content-center">
+                        <button id="start-camera" class="btn btn-outline-primary flex-fill" style="max-width:180px;">
+                            <i class="fas fa-camera me-2"></i>Bắt đầu camera
+                        </button>
+                        <button id="capture-photo" class="btn btn-success flex-fill" style="display: none; max-width:180px;">
+                            <i class="fas fa-camera-retro me-2"></i>Chụp ảnh
+                        </button>
+                        <button id="retake-photo" class="btn btn-secondary flex-fill" style="display: none; max-width:180px;">
+                            <i class="fas fa-redo me-2"></i>Chụp lại
+                        </button>
+                    </div>
                     <form method="post" id="feedback-form" class="mt-4" style="display: none;">
                         {% csrf_token %}
                         <input type="hidden" name="emotion" id="emotion-input">
                         <input type="hidden" name="emotion_image" id="emotion-image-input">
-                        <div class="mb-3">
-                            <label class="form-label mb-2">Đánh giá của bạn:</label>
-                            <div class="rating mb-3">
+                        <div class="rating-section mb-4">
+                            <label class="form-label mb-2 fw-semibold">Đánh giá của bạn:</label>
+                            <div class="rating justify-content-center">
                                 {% for i in "54321" %}
                                 <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
-                                <label for="star{{ i }}">☆</label>
+                                <label for="star{{ i }}"><i class="fas fa-star"></i></label>
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="comment" class="form-label">Nhận xét:</label>
-                            <textarea class="form-control" id="comment" name="comment" rows="3" 
-                                placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                        <div class="mb-4">
+                            <label for="comment" class="form-label fw-semibold">Nhận xét:</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-success btn-lg fw-bold">
                                 <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
                             </button>
                         </div>
@@ -85,167 +85,286 @@
 </div>
 
 <style>
-.product-image {
-    max-height: 500px;
-    width: 100%;
+body {
+    font-family: 'Roboto', 'Open Sans', Arial, sans-serif;
+    background: #f4f6fb;
+}
+.product-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #22223b;
+}
+.product-image-main {
+    max-height: 220px;
     object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
 }
-
-.product-info {
+.no-image {
+    width: 100%;
+    height: 220px;
+}
+.camera-section h5 {
+    color: #0d6efd;
+}
+.camera-container {
+    width: 100%;
+    height: 260px;
+    background: #181a1b;
+    border-radius: 16px;
+    position: relative;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.camera-preview {
+    width: 100%;
     height: 100%;
-    background-color: #f8f9fa;
-    border-radius: 8px;
+    object-fit: cover;
+    border-radius: 16px;
+    background: #000;
 }
-
+.emotion-result {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1.2rem;
+    background-color: #28a745;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(40,167,69,0.08);
+    z-index: 2;
+    display: none;
+}
 .rating {
     display: flex;
     flex-direction: row-reverse;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    gap: 0.5rem;
 }
-
 .rating input {
     display: none;
 }
-
 .rating label {
-    font-size: 30px;
-    color: #ddd;
     cursor: pointer;
-    padding: 5px;
+    font-size: 2rem;
+    color: #dee2e6;
+    transition: color 0.2s;
 }
-
-.rating input:checked ~ label,
 .rating label:hover,
-.rating label:hover ~ label {
-    color: #ffd700;
+.rating label:hover ~ label,
+.rating input:checked ~ label {
+    color: #ffc107;
 }
-
-.card {
-    border: none;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-}
-
-.card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #eee;
-}
-
-.btn {
-    padding: 0.5rem 1.5rem;
-}
-
-#videoElement {
-    background-color: #f8f9fa;
+.form-control {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
     border: 1px solid #dee2e6;
+    font-size: 1.1rem;
 }
-
-textarea.form-control {
-    resize: none;
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.10);
 }
-
-@media (max-width: 768px) {
-    .product-image {
-        max-height: 300px;
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: box-shadow 0.2s, background 0.2s;
+}
+.btn:focus {
+    box-shadow: 0 0 0 0.15rem rgba(13,110,253,0.15);
+}
+.btn-success {
+    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+    border: none;
+}
+.btn-success:hover {
+    background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
+}
+.btn-outline-primary {
+    border: 2px solid #0d6efd;
+    color: #0d6efd;
+    background: #fff;
+}
+.btn-outline-primary:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+.btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+    border: none;
+}
+.btn-secondary:hover {
+    background: #ced4da;
+    color: #22223b;
+}
+.card {
+    border-radius: 18px;
+    background: #fff;
+}
+@media (max-width: 991px) {
+    .product-title {
+        font-size: 1.5rem;
     }
-    
-    .product-info {
-        margin-top: 1rem;
+    .product-image-main, .no-image {
+        max-height: 160px;
+        height: 160px;
+    }
+    .camera-container {
+        height: 160px;
+    }
+}
+@media (max-width: 767px) {
+    .container {
+        padding: 0 0.5rem;
+    }
+    .card-body {
+        padding: 1.2rem !important;
+    }
+    .product-title {
+        font-size: 1.1rem;
     }
 }
 </style>
 
-{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const videoElement = document.getElementById('videoElement');
+    const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
-    const snapshot = document.getElementById('snapshot');
-    const capturedImage = document.getElementById('captured-image');
     const emotionResult = document.getElementById('emotion-result');
-    const emotionError = document.getElementById('emotion-error');
     const feedbackForm = document.getElementById('feedback-form');
     const emotionInput = document.getElementById('emotion-input');
     const emotionImageInput = document.getElementById('emotion-image-input');
-    const captureBtn = document.getElementById('capture-btn');
-    const retakeBtn = document.getElementById('retake-btn');
+    const startCameraBtn = document.getElementById('start-camera');
+    const capturePhotoBtn = document.getElementById('capture-photo');
+    const retakePhotoBtn = document.getElementById('retake-photo');
+    const capturedImage = document.getElementById('captured-image');
 
     let stream = null;
 
-    // Start video stream
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(s => {
-            stream = s;
-            videoElement.srcObject = stream;
-        })
-        .catch(err => {
-            alert("Không thể truy cập webcam. Vui lòng kiểm tra quyền truy cập.");
-        });
-
-    captureBtn.addEventListener('click', function() {
-        captureBtn.disabled = true;
-        emotionResult.textContent = "Đang nhận diện...";
+    function showError(message) {
+        emotionResult.textContent = message;
         emotionResult.style.display = 'block';
-        emotionError.textContent = "";
-        emotionError.style.display = 'none';
-        canvas.width = videoElement.videoWidth;
-        canvas.height = videoElement.videoHeight;
-        canvas.getContext('2d').drawImage(videoElement, 0, 0);
-
-        const imageData = canvas.toDataURL('image/jpeg');
-        fetch('{% url "emotion_feedback:save-emotion" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify({
-                image: imageData,
-                session_id: '{{ session_id }}'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                snapshot.src = imageData;
-                capturedImage.style.display = 'block';
-                captureBtn.style.display = 'none';
-                retakeBtn.style.display = 'block';
-                emotionResult.textContent = `Cảm xúc: ${data.emotion}`;
-                emotionResult.style.display = 'block';
-                emotionError.textContent = "";
-                emotionError.style.display = 'none';
-                emotionInput.value = data.emotion;
-                emotionImageInput.value = imageData;
-                feedbackForm.style.display = 'block';
-            } else {
-                emotionResult.textContent = "";
-                emotionResult.style.display = 'none';
-                emotionError.textContent = 'Không thể nhận diện cảm xúc. Vui lòng thử lại.';
-                emotionError.style.display = 'block';
-                captureBtn.disabled = false;
-            }
-        })
-        .catch(error => {
-            emotionResult.textContent = "";
-            emotionResult.style.display = 'none';
-            emotionError.textContent = 'Có lỗi xảy ra. Vui lòng thử lại.';
-            emotionError.style.display = 'block';
-            captureBtn.disabled = false;
-        });
-    });
-
-    retakeBtn.addEventListener('click', function() {
+        emotionResult.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+    }
+    function showSuccess(message) {
+        emotionResult.textContent = message;
+        emotionResult.style.display = 'block';
+        emotionResult.style.backgroundColor = '#28a745';
+    }
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+            stream = null;
+        }
+    }
+    function resetCameraView() {
+        video.style.display = 'block';
         capturedImage.style.display = 'none';
-        captureBtn.style.display = 'block';
-        retakeBtn.style.display = 'none';
-        feedbackForm.style.display = 'none';
-        emotionResult.textContent = '';
+        capturePhotoBtn.style.display = 'block';
+        retakePhotoBtn.style.display = 'none';
         emotionResult.style.display = 'none';
-        emotionError.textContent = '';
-        emotionError.style.display = 'none';
-        captureBtn.disabled = false;
+    }
+    startCameraBtn.addEventListener('click', async function() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                }
+            });
+            video.srcObject = stream;
+            showSuccess('Camera đã được kết nối thành công!');
+            startCameraBtn.style.display = 'none';
+            capturePhotoBtn.style.display = 'block';
+        } catch (err) {
+            console.error('Camera error:', err);
+            if (err.name === 'NotAllowedError') {
+                showError('Vui lòng cho phép truy cập camera để tiếp tục.');
+            } else if (err.name === 'NotFoundError') {
+                showError('Không tìm thấy camera. Vui lòng kiểm tra thiết bị của bạn.');
+            } else if (err.name === 'NotReadableError') {
+                showError('Camera đang được sử dụng bởi ứng dụng khác. Vui lòng đóng các ứng dụng đang sử dụng camera.');
+            } else {
+                showError('Không thể truy cập camera: ' + err.message);
+            }
+        }
+    });
+    capturePhotoBtn.addEventListener('click', function() {
+        try {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+            capturedImage.src = imageData;
+            capturedImage.style.display = 'block';
+            video.style.display = 'none';
+            capturePhotoBtn.style.display = 'none';
+            retakePhotoBtn.style.display = 'block';
+            showSuccess('Đang phân tích cảm xúc...');
+            fetch('{% url "emotion_feedback:save-emotion" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    image: imageData,
+                    session_id: '{{ session_id }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showSuccess(`Cảm xúc: ${data.emotion}`);
+                    emotionInput.value = data.emotion;
+                    emotionImageInput.value = imageData;
+                    feedbackForm.style.display = 'block';
+                    stopCamera();
+                } else {
+                    showError('Không thể nhận diện cảm xúc. Vui lòng thử lại.');
+                    retakePhotoBtn.click();
+                }
+            })
+            .catch(error => {
+                showError('Có lỗi xảy ra. Vui lòng thử lại.');
+                retakePhotoBtn.click();
+            });
+        } catch (err) {
+            showError('Không thể chụp ảnh: ' + err.message);
+            retakePhotoBtn.click();
+        }
+    });
+    retakePhotoBtn.addEventListener('click', async function() {
+        try {
+            resetCameraView();
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                }
+            });
+            video.srcObject = stream;
+            showSuccess('Camera đã được kết nối lại!');
+        } catch (err) {
+            showError('Không thể khởi động lại camera: ' + err.message);
+            startCameraBtn.style.display = 'block';
+            retakePhotoBtn.style.display = 'none';
+        }
+    });
+    window.addEventListener('beforeunload', function() {
+        stopCamera();
     });
 });
 </script>
-{% endblock %}
 {% endblock %} 
