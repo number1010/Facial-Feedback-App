@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid bg-light min-vh-100">
+    <div class="container py-5">
+        <!-- Welcome Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-secondary mb-3">Welcome to Facial Feedback</h1>
+            <p class="lead text-muted">
+                Help us improve by sharing your emotions through facial expressions!
+            </p>
+        </div>
+
+        <!-- Main Actions -->
+        <div class="row g-4 py-4">
+            {% if user.is_authenticated %}
+                {% if user.is_superuser or user.is_market_analyst %}
+                <!-- Management Options -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tasks fa-3x text-primary mb-3"></i>
+                            <h3 class="card-title h5">Quản lý Sản phẩm</h3>
+                            <p class="card-text">Quản lý và theo dõi sản phẩm trong hệ thống</p>
+                            <a href="{% url 'accounts:product_management' %}" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-2"></i>Truy cập
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Regular User Options -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-smile fa-3x text-info mb-3"></i>
+                            <h3 class="card-title h5">Đánh giá Sản phẩm</h3>
+                            <p class="card-text">Bắt đầu phiên đánh giá sản phẩm mới</p>
+                            <a href="{% url 'emotion_feedback:product_list' %}" class="btn btn-info">
+                                <i class="fas fa-play me-2"></i>Bắt đầu
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <!-- Guest Options -->
+                <div class="col-md-6 mx-auto text-center">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h5 mb-4">Bắt đầu sử dụng</h3>
+                            <div class="d-grid gap-3">
+                                <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                                </a>
+                                <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user-plus me-2"></i>Đăng ký
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Features Section -->
+        <div class="row g-4 py-5">
+            <div class="col-12 text-center mb-4">
+                <h2 class="h3">Tính năng nổi bật</h2>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-camera fa-2x text-primary mb-3"></i>
+                    <h3 class="h5">Nhận diện cảm xúc</h3>
+                    <p class="text-muted">Phân tích biểu cảm khuôn mặt tự động</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-chart-bar fa-2x text-success mb-3"></i>
+                    <h3 class="h5">Phân tích dữ liệu</h3>
+                    <p class="text-muted">Thống kê và báo cáo chi tiết</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-shield-alt fa-2x text-info mb-3"></i>
+                    <h3 class="h5">Bảo mật dữ liệu</h3>
+                    <p class="text-muted">Đảm bảo an toàn thông tin người dùng</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge.rounded-circle {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-lg {
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+}
+
+.display-4 {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.lead {
+    font-size: 1.2rem;
+}
+
+.bg-white {
+    border-radius: 20px;
+}
+
+.card {
+    transition: transform 0.2s;
+    border: none;
+    border-radius: 15px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %} 

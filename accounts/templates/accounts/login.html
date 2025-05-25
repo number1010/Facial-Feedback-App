@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">Đăng nhập</h2>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if error_message %}
+                        <div class="alert alert-danger mb-3">
+                            {{ error_message }}
+                        </div>
+                        {% endif %}
+
+                        {{ form|crispy }}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Chưa có tài khoản? 
+                            <a href="{% url 'accounts:register' %}" class="text-decoration-none">
+                                Đăng ký ngay
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.btn-primary {
+    border-radius: 20px;
+    padding: 10px 20px;
+}
+
+.alert {
+    border-radius: 10px;
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+}
+
+.alert-danger {
+    background-color: #fff2f2;
+    border-color: #ffdbdb;
+    color: #dc3545;
+}
+</style>
+{% endblock %} 

@@ -1,59 +1,66 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
+<div class="container mt-4">
+    <div class="row g-4">
         <div class="col-md-6">
             {% if product.image %}
-                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+                <img src="{{ product.image.url }}" class="img-fluid rounded product-image" alt="{{ product.name }}">
             {% endif %}
         </div>
         <div class="col-md-6">
-            <h2>{{ product.name }}</h2>
-            <p class="text-muted">Đề tài: {{ product.topic.name }}</p>
-            <p class="lead">{{ product.description }}</p>
-            <p class="h4 text-primary">{{ product.price }} VNĐ</p>
-            <p class="text-muted">Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</p>
+            <div class="product-info p-3">
+                <h2 class="mb-2">{{ product.name }}</h2>
+                <p class="text-muted mb-2"><i class="fas fa-tag me-2"></i>{{ product.topic.name }}</p>
+                <p class="lead mb-3">{{ product.description }}</p>
+                <p class="h4 text-primary mb-2">{{ product.price|currency_vnd }}</p>
+                <p class="text-muted mb-3"><i class="fas fa-calendar me-2"></i>Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</p>
+            </div>
         </div>
     </div>
 
-    <div class="row mt-5">
+    <div class="row mt-4">
         <div class="col-md-8 mx-auto">
             <div class="card">
-                <div class="card-header">
-                    <h4>Đánh giá sản phẩm</h4>
+                <div class="card-header py-3">
+                    <h4 class="mb-0">Đánh giá sản phẩm</h4>
                 </div>
                 <div class="card-body">
                     <!-- Emotion Capture Section -->
                     <div class="mb-4">
-                        <h5>Bước 1: Chụp ảnh khuôn mặt</h5>
-                        <div class="row">
+                        <h5 class="mb-3">Bước 1: Chụp ảnh khuôn mặt</h5>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <video id="videoElement" width="100%" autoplay></video>
+                                <video id="videoElement" width="100%" class="rounded" autoplay></video>
                                 <canvas id="canvas" style="display: none;"></canvas>
                             </div>
                             <div class="col-md-6">
-                                <div id="captured-image" class="text-center" style="display: none;">
+                                <div id="captured-image" class="text-center mb-3" style="display: none;">
                                     <img id="snapshot" class="img-fluid rounded mb-2" alt="Captured face">
-                                    <p id="emotion-result" class="lead" style="display: none;"></p>
+                                    <p id="emotion-result" class="lead mb-0" style="display: none;"></p>
                                     <div id="emotion-error" class="text-danger mt-2" style="display: none;"></div>
                                 </div>
                                 <div class="d-grid gap-2">
-                                    <button id="capture-btn" class="btn btn-primary">Chụp ảnh</button>
-                                    <button id="retake-btn" class="btn btn-secondary" style="display: none;">Chụp lại</button>
+                                    <button id="capture-btn" class="btn btn-primary">
+                                        <i class="fas fa-camera me-2"></i>Chụp ảnh
+                                    </button>
+                                    <button id="retake-btn" class="btn btn-secondary" style="display: none;">
+                                        <i class="fas fa-redo me-2"></i>Chụp lại
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Rating Form -->
-                    <form method="post" id="feedback-form" style="display: none;">
+                    <form method="post" id="feedback-form" class="mt-4" style="display: none;">
                         {% csrf_token %}
                         <input type="hidden" name="emotion" id="emotion-input">
                         <input type="hidden" name="emotion_image" id="emotion-image-input">
                         <div class="mb-3">
-                            <label class="form-label">Đánh giá của bạn:</label>
-                            <div class="rating">
+                            <label class="form-label mb-2">Đánh giá của bạn:</label>
+                            <div class="rating mb-3">
                                 {% for i in "54321" %}
                                 <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
                                 <label for="star{{ i }}">☆</label>
@@ -62,10 +69,13 @@
                         </div>
                         <div class="mb-3">
                             <label for="comment" class="form-label">Nhận xét:</label>
-                            <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" 
+                                placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Gửi đánh giá
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -75,6 +85,18 @@
 </div>
 
 <style>
+.product-image {
+    max-height: 500px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.product-info {
+    height: 100%;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
 .rating {
     display: flex;
     flex-direction: row-reverse;
@@ -96,6 +118,39 @@
 .rating label:hover,
 .rating label:hover ~ label {
     color: #ffd700;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.btn {
+    padding: 0.5rem 1.5rem;
+}
+
+#videoElement {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+textarea.form-control {
+    resize: none;
+}
+
+@media (max-width: 768px) {
+    .product-image {
+        max-height: 300px;
+    }
+    
+    .product-info {
+        margin-top: 1rem;
+    }
 }
 </style>
 

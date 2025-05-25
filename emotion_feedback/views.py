@@ -22,6 +22,8 @@ from django.core.files.base import ContentFile
 from datetime import datetime
 from PIL import Image
 from io import BytesIO
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
 
 
 # Định nghĩa các lớp cảm xúc
@@ -38,16 +40,21 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 class HomeView(TemplateView):
     template_name = 'emotion_feedback/home.html'
 
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated and not request.user.is_market_analyst:
-            return redirect('emotion_feedback:product_list')
-        return super().get(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        session_id = str(uuid.uuid4())
-        session = FeedbackSession.objects.create(session_id=session_id)
-        context['session_id'] = session_id
+        
+        if self.request.user.is_authenticated and not (self.request.user.is_staff or self.request.user.is_superuser):
+            # Get latest products for regular users
+            latest_products = Product.objects.filter(
+                ~Q(id__in=UserFeedback.objects.filter(user=self.request.user).values_list('product_id', flat=True))
+            ).order_by('-created_at')[:4]
+            context['latest_products'] = latest_products
+            
+            # Create new session for emotion capture
+            session_id = str(uuid.uuid4())
+            session = FeedbackSession.objects.create(session_id=session_id)
+            context['session_id'] = session_id
+            
         return context
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -237,25 +244,48 @@ class ThankYouView(TemplateView):
     template_name = 'emotion_feedback/thank_you.html'
 
 @login_required
+def view_my_product_feedback(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    feedback = UserFeedback.objects.filter(user=request.user, product=product).first()
+    
+    return render(request, 'emotion_feedback/view_my_product_feedback.html', {
+        'product': product,
+        'feedback': feedback
+    })
+
+@login_required
 def product_list(request):
-    topics = Topic.objects.all()
-    selected_topic_id = request.GET.get('topic')
+    # Get selected topic
+    selected_topic_id = request.GET.get('topic', 'all')
     
-    # Lấy danh sách sản phẩm đã được đánh giá bởi user hiện tại
-    reviewed_products = UserFeedback.objects.filter(user=request.user).values_list('product_id', flat=True)
+    # Get all products
+    products = Product.objects.all()
     
-    # Lấy tất cả sản phẩm, loại trừ những sản phẩm đã đánh giá
-    products = Product.objects.exclude(id__in=reviewed_products)
-    
-    # Lọc theo topic nếu có
-    if selected_topic_id and selected_topic_id != 'all':
+    # Filter by topic if selected
+    if selected_topic_id != 'all':
         products = products.filter(topic_id=selected_topic_id)
-        
-    return render(request, 'emotion_feedback/product_list.html', {
+    
+    # Get user's feedback products
+    user_feedback_products = UserFeedback.objects.filter(user=request.user).values_list('product_id', flat=True)
+    
+    # Filter out products that user has already given feedback
+    products = products.exclude(id__in=user_feedback_products)
+    
+    # Get all topics for filter dropdown
+    topics = Topic.objects.all()
+    
+    # Pagination
+    paginator = Paginator(products, 12)  # Show 12 products per page
+    page = request.GET.get('page')
+    products = paginator.get_page(page)
+    
+    context = {
         'products': products,
         'topics': topics,
-        'selected_topic_id': selected_topic_id or 'all',
-    })
+        'selected_topic_id': selected_topic_id,
+        'user_feedback_products': user_feedback_products,
+    }
+    return render(request, 'emotion_feedback/product_list.html', context)
 
 @login_required
 def product_detail(request, product_id):
@@ -308,12 +338,40 @@ def product_detail(request, product_id):
 
 @login_required
 def delete_feedback(request, feedback_id):
-    try:
-        feedback = UserFeedback.objects.get(id=feedback_id, user=request.user)
-        product_id = feedback.product.id  # Lưu lại product_id trước khi xóa
-        feedback.delete()
-        messages.success(request, 'Đánh giá đã được xóa thành công!')
-    except UserFeedback.DoesNotExist:
-        messages.error(request, 'Không tìm thấy đánh giá!')
+    feedback = get_object_or_404(UserFeedback, id=feedback_id, user=request.user)
+    feedback.delete()
+    messages.success(request, 'Đánh giá đã được xóa thành công.')
+    return redirect('emotion_feedback:my_feedback')
+
+@login_required
+def my_feedback(request):
+    # Get selected topic
+    selected_topic_id = request.GET.get('topic', 'all')
     
-    return redirect('emotion_feedback:dashboard')
+    # Get user's feedbacks with related products
+    user_feedbacks = UserFeedback.objects.filter(user=request.user).select_related('product', 'product__topic')
+    
+    # Filter by topic if selected
+    if selected_topic_id != 'all':
+        user_feedbacks = user_feedbacks.filter(product__topic_id=selected_topic_id)
+    
+    # Get all topics for filter dropdown
+    topics = Topic.objects.all()
+    
+    # Pagination
+    paginator = Paginator(user_feedbacks, 12)  # Show 12 feedbacks per page
+    page = request.GET.get('page')
+    user_feedbacks = paginator.get_page(page)
+    
+    context = {
+        'user_feedbacks': user_feedbacks,
+        'topics': topics,
+        'selected_topic_id': selected_topic_id,
+    }
+    return render(request, 'emotion_feedback/my_feedback.html', context)
+
+def home(request):
+    """
+    Main home page view that shows the welcome message and how it works section
+    """
+    return render(request, 'emotion_feedback/home.html')

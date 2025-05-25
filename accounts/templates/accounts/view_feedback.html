@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Đánh giá cho sản phẩm: {{ product.name }}</h2>
+                <a href="{% url 'accounts:analyst_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Product Info -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h4>{{ product.name }}</h4>
+                            <p class="text-muted">{{ product.description }}</p>
+                            <p><strong>Đề tài:</strong> {{ product.topic.name }}</p>
+                            {% if user.is_superuser %}
+                            <p><strong>Người tạo:</strong> {{ product.user.username }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Lọc theo số sao:</strong></label>
+                            <select name="rating" class="form-select">
+                                <option value="">Tất cả</option>
+                                <option value="1" {% if request.GET.rating == '1' %}selected{% endif %}>1 sao</option>
+                                <option value="2" {% if request.GET.rating == '2' %}selected{% endif %}>2 sao</option>
+                                <option value="3" {% if request.GET.rating == '3' %}selected{% endif %}>3 sao</option>
+                                <option value="4" {% if request.GET.rating == '4' %}selected{% endif %}>4 sao</option>
+                                <option value="5" {% if request.GET.rating == '5' %}selected{% endif %}>5 sao</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><strong>Lọc theo cảm xúc:</strong></label>
+                            <select name="emotion" class="form-select">
+                                <option value="">Tất cả</option>
+                                {% for emotion in emotions %}
+                                <option value="{{ emotion }}" {% if request.GET.emotion == emotion %}selected{% endif %}>{{ emotion }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="btn-group w-100">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter"></i> Áp dụng
+                                </button>
+                                <a href="{% url 'accounts:view_feedback' product.id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Xóa bộ lọc
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Feedback List -->
+            {% if feedbacks %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 15%">Người đánh giá</th>
+                            <th style="width: 15%">Thời gian</th>
+                            <th style="width: 15%">Cảm xúc</th>
+                            <th style="width: 15%">Điểm đánh giá</th>
+                            <th style="width: 40%">Nhận xét</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in feedbacks %}
+                        <tr>
+                            <td class="align-middle">{{ feedback.user.username }}</td>
+                            <td class="align-middle">{{ feedback.submitted_at|date:"d/m/Y H:i" }}</td>
+                            <td class="align-middle">
+                                {% if feedback.emotion %}
+                                <span class="badge bg-info">{{ feedback.emotion }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Chưa có</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                {% if feedback.rating %}
+                                <span class="text-warning d-inline-flex align-items-center">
+                                    {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= feedback.rating %}
+                                    <i class="fas fa-star me-1"></i>
+                                    {% else %}
+                                    <i class="far fa-star me-1"></i>
+                                    {% endif %}
+                                    {% endfor %}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">Chưa có</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                {% if feedback.comment %}
+                                {{ feedback.comment }}
+                                {% else %}
+                                <em class="text-muted">Không có nhận xét</em>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if feedbacks.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if feedbacks.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ feedbacks.previous_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.emotion %}&emotion={{ request.GET.emotion }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in feedbacks.paginator.page_range %}
+                    <li class="page-item {% if num == feedbacks.number %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.emotion %}&emotion={{ request.GET.emotion }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if feedbacks.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ feedbacks.next_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.emotion %}&emotion={{ request.GET.emotion }}{% endif %}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Chưa có đánh giá nào cho sản phẩm này.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5em 0.75em;
+}
+
+.fa-star {
+    font-size: 0.9rem;
+}
+
+.text-warning .fa-star {
+    line-height: 1;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.02);
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+.btn-group {
+    gap: 8px;
+}
+</style>
+{% endblock %} 

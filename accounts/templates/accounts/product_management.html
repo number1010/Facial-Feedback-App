@@ -3,8 +3,13 @@
 
 {% block content %}
 <div class="container py-4">
-    <h2 class="mb-4">Danh sách sản phẩm</h2>
-    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">{% if is_superuser %}Quản lý tất cả sản phẩm{% else %}Quản lý sản phẩm của tôi{% endif %}</h2>
+        <a href="{% url 'accounts:add_product' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Thêm sản phẩm
+        </a>
+    </div>
+
     <!-- Filter by topic -->
     <div class="mb-3">
         <select class="form-select" onchange="window.location.href='?topic=' + this.value + '&page=1'">
@@ -33,10 +38,26 @@
                     <div class="price">
                         <i class="fas fa-money-bill me-1"></i>{{ product.price|currency_vnd }}
                     </div>
+                    {% if is_superuser %}
+                    <div class="meta-info">
+                        <i class="fas fa-user me-1"></i>Người tạo: {{ product.user.username }}
+                    </div>
+                    {% endif %}
                     <div class="mt-auto pt-2">
-                        <a href="{% url 'emotion_feedback:product_detail' product.id %}" class="btn btn-primary w-100">
-                            <i class="fas fa-star me-1"></i>Đánh giá
-                        </a>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'accounts:view_feedback' product.id %}" class="btn btn-info w-100">
+                                <i class="fas fa-eye me-1"></i>Xem đánh giá
+                            </a>
+                            <a href="{% url 'accounts:product_stats' product.id %}" class="btn btn-success w-100">
+                                <i class="fas fa-chart-bar me-1"></i>Thống kê
+                            </a>
+                            <a href="{% url 'accounts:edit_product' product.id %}" class="btn btn-warning w-100">
+                                <i class="fas fa-edit me-1"></i>Sửa
+                            </a>
+                            <button class="btn btn-danger w-100" onclick="deleteProduct({{ product.id }})">
+                                <i class="fas fa-trash me-1"></i>Xóa
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -46,7 +67,7 @@
 
     {% if not products %}
     <div class="alert alert-info">
-        <i class="fas fa-info-circle me-2"></i>Không có sản phẩm nào.
+        <i class="fas fa-info-circle me-2"></i>Chưa có sản phẩm nào.
     </div>
     {% endif %}
 
@@ -88,4 +109,12 @@
     margin-bottom: 1rem;
 }
 </style>
+
+<script>
+function deleteProduct(productId) {
+    if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+        window.location.href = `/accounts/product/${productId}/delete/`;
+    }
+}
+</script>
 {% endblock %} 

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Thêm Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Báo cáo thống kê: {{ product.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Thông tin tổng quan -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h5 class="border-bottom pb-2">Thông tin tổng quan</h5>
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title text-muted">Tổng đánh giá</h6>
+                                            <h3 class="mb-0">{{ total_feedbacks }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title text-muted">Đánh giá trung bình</h6>
+                                            <h3 class="mb-0">{{ rating_stats.average|floatformat:1 }} ★</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title text-muted">Đánh giá cao nhất</h6>
+                                            <h3 class="mb-0">{{ rating_stats.max }} ★</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title text-muted">Đánh giá thấp nhất</h6>
+                                            <h3 class="mb-0">{{ rating_stats.min }} ★</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Biểu đồ phân phối đánh giá -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">Phân phối đánh giá</h5>
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">Phân phối cảm xúc</h5>
+                            <canvas id="emotionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'accounts:analyst_dashboard' %}" class="btn btn-secondary">Quay lại quản lý sản phẩm</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Biểu đồ phân phối đánh giá
+const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+new Chart(ratingCtx, {
+    type: 'bar',
+    data: {
+        labels: ['1 sao', '2 sao', '3 sao', '4 sao', '5 sao'],
+        datasets: [{
+            label: 'Số lượng đánh giá',
+            data: [
+                {% for item in rating_distribution %}
+                    {{ item.count }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(255, 159, 64, 0.5)',
+                'rgba(255, 205, 86, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(54, 162, 235, 0.5)'
+            ],
+            borderColor: [
+                'rgb(255, 99, 132)',
+                'rgb(255, 159, 64)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(54, 162, 235)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Biểu đồ phân phối cảm xúc
+const emotionCtx = document.getElementById('emotionChart').getContext('2d');
+new Chart(emotionCtx, {
+    type: 'pie',
+    data: {
+        labels: [
+            {% for item in emotion_distribution %}
+                '{{ item.emotion|title }}{% if item.percentage > 0 %} ({{ item.percentage }}%){% endif %}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for item in emotion_distribution %}
+                    {{ item.count }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(153, 102, 255, 0.5)',
+                'rgba(255, 159, 64, 0.5)',
+                'rgba(201, 203, 207, 0.5)'
+            ],
+            borderColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 206, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)',
+                'rgb(255, 159, 64)',
+                'rgb(201, 203, 207)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'right'
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

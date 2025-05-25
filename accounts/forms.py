@@ -14,8 +14,24 @@ class UserRegistrationForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2', 'is_market_analyst')
 
 class UserLoginForm(forms.Form):
-    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Nhập tên đăng nhập',
+                'autocomplete': 'username'
+            }
+        )
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Nhập mật khẩu',
+                'autocomplete': 'current-password'
+            }
+        )
+    )
 
 class ProductForm(forms.ModelForm):
     class Meta:

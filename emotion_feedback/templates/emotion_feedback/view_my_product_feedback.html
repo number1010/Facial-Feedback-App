@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Product Information -->
+        <div class="col-md-4">
+            <div class="card product-card h-100">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="description">{{ product.description }}</p>
+                    <div class="meta-info">
+                        <i class="fas fa-tag me-1"></i>{{ product.topic.name }}
+                    </div>
+                    <div class="price">
+                        <i class="fas fa-money-bill me-1"></i>{{ product.price|currency_vnd }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Information -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3">Đánh giá của tôi</h4>
+                    
+                    {% if feedback %}
+                    <div class="feedback-content">
+                        <div class="feedback-item mb-3">
+                            <h5 class="text-muted mb-2">Đánh giá sao</h5>
+                            <div class="d-flex align-items-center">
+                                <div class="h4 mb-0 me-2">{{ feedback.rating }}/5</div>
+                                <div class="text-warning">
+                                    {% for i in "12345" %}
+                                    <i class="fas fa-star{% if i|add:'0' > feedback.rating %}-o{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feedback-item mb-3">
+                            <h5 class="text-muted mb-2">Cảm xúc</h5>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-smile fa-2x me-2"></i>
+                                <span class="h5 mb-0">{{ feedback.emotion|default:"Không có" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="feedback-item mb-3">
+                            <h5 class="text-muted mb-2">Nhận xét</h5>
+                            <p class="mb-0">{{ feedback.comment|default:"Không có nhận xét" }}</p>
+                        </div>
+
+                        <div class="feedback-item mb-3">
+                            <h5 class="text-muted mb-2">Thời gian đánh giá</h5>
+                            <p class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                {{ feedback.submitted_at|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button class="btn btn-danger" onclick="deleteFeedback({{ feedback.id }})">
+                                <i class="fas fa-trash me-2"></i>Xóa đánh giá
+                            </button>
+                            <a href="{% url 'emotion_feedback:my_feedback' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Bạn chưa đánh giá sản phẩm này.
+                    </div>
+                    <div class="d-grid">
+                        <a href="{% url 'emotion_feedback:product_detail' product.id %}" class="btn btn-primary">
+                            <i class="fas fa-star me-2"></i>Đánh giá ngay
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feedback-item {
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+
+.text-warning {
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .feedback-item {
+        padding: 10px;
+    }
+}
+</style>
+
+<script>
+function deleteFeedback(feedbackId) {
+    if (confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/delete-feedback/${feedbackId}/`;
+        
+        var csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrfmiddlewaretoken';
+        csrfToken.value = '{{ csrf_token }}';
+        form.appendChild(csrfToken);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

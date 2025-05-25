@@ -1,40 +1,156 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<style>
+.register-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+}
+
+.form-control:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 2px rgba(66,153,225,0.2);
+}
+
+.password-requirements {
+    font-size: 0.875rem;
+    color: #718096;
+    padding-left: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+.password-requirements li {
+    margin-bottom: 0.25rem;
+}
+
+.btn-primary {
+    background: #4299e1;
+    border: none;
+    padding: 0.75rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+}
+
+.card-footer {
+    background: transparent;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding: 1rem;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.form-check {
+    margin: 1rem 0;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">Đăng ký tài khoản</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                        <div class="form-group mb-3">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
-                            {% endif %}
-                            {% if field.errors %}
-                            <div class="alert alert-danger">
-                                {{ field.errors }}
+<div class="register-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0">Đăng ký tài khoản</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="username">Tên đăng nhập:</label>
+                                <input type="text" name="username" id="username" class="form-control" maxlength="150" required>
+                                <div class="form-text">
+                                    Yêu cầu. Tối đa 150 ký tự.<br>
+                                    Chỉ được sử dụng chữ cái, số và các ký tự @/./+/-/_
+                                </div>
                             </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Đăng ký</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer text-center">
-                    <p class="mb-0">Đã có tài khoản? <a href="{% url 'login' %}">Đăng nhập</a></p>
+
+                            <div class="form-group">
+                                <label class="form-label" for="email">Địa chỉ email:</label>
+                                <input type="email" name="email" id="email" class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="password">Mật khẩu:</label>
+                                <input type="password" name="password" id="password" class="form-control" required>
+                                <ul class="password-requirements list-unstyled">
+                                    <li>• Mật khẩu không được quá giống với thông tin cá nhân của bạn</li>
+                                    <li>• Mật khẩu phải chứa ít nhất 8 ký tự</li>
+                                    <li>• Mật khẩu không được là mật khẩu phổ biến</li>
+                                    <li>• Mật khẩu không được chỉ chứa số</li>
+                                </ul>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="password2">Xác nhận mật khẩu:</label>
+                                <input type="password" name="password2" id="password2" class="form-control" required>
+                                <div class="form-text">Nhập lại mật khẩu như trên để xác minh</div>
+                            </div>
+
+                            <div class="form-check">
+                                <input type="checkbox" name="is_market_analyst" id="is_market_analyst" class="form-check-input">
+                                <label class="form-check-label" for="is_market_analyst">
+                                    Tôi là nghiên cứu thị trường
+                                </label>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Đăng ký</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center">
+                        <p class="mb-0">Đã có tài khoản? <a href="{% url 'login' %}" class="text-decoration-none">Đăng nhập</a></p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Đánh giá của tôi</h2>
+
+    <!-- Filter by topic -->
+    <div class="mb-3">
+        <select class="form-select" onchange="window.location.href='?topic=' + this.value + '&page=1'">
+            <option value="all" {% if selected_topic_id == 'all' %}selected{% endif %}>Tất cả đề tài</option>
+            {% for topic in topics %}
+            <option value="{{ topic.id }}" {% if selected_topic_id == topic.id|stringformat:"s" %}selected{% endif %}>
+                {{ topic.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="row g-3">
+        {% for feedback in user_feedbacks %}
+        <div class="col-md-3">
+            <div class="card product-card h-100">
+                {% if feedback.product.image %}
+                <img src="{{ feedback.product.image.url }}" class="card-img-top" alt="{{ feedback.product.name }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ feedback.product.name }}</h5>
+                    <p class="description">{{ feedback.product.description }}</p>
+                    <div class="meta-info">
+                        <i class="fas fa-tag me-1"></i>{{ feedback.product.topic.name }}
+                    </div>
+                    <div class="price">
+                        <i class="fas fa-money-bill me-1"></i>{{ feedback.product.price|currency_vnd }}
+                    </div>
+                    <div class="rating-info mt-2">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="text-warning me-2">
+                                {% for i in "12345" %}
+                                <i class="fas fa-star{% if i|add:'0' > feedback.rating %}-o{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="text-muted">({{ feedback.rating }}/5)</span>
+                        </div>
+                        <div class="emotion mb-2">
+                            <i class="fas fa-smile me-1"></i>
+                            <span>{{ feedback.emotion|default:"Không có" }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-2">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'emotion_feedback:view_my_product_feedback' feedback.product.id %}" class="btn btn-info w-100">
+                                <i class="fas fa-eye me-1"></i>Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not user_feedbacks %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>Bạn chưa có đánh giá nào.
+    </div>
+    {% endif %}
+
+    {% if user_feedbacks.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if user_feedbacks.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?topic={{ selected_topic_id }}&page={{ user_feedbacks.previous_page_number }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in user_feedbacks.paginator.page_range %}
+            <li class="page-item {% if num == user_feedbacks.number %}active{% endif %}">
+                <a class="page-link" href="?topic={{ selected_topic_id }}&page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if user_feedbacks.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?topic={{ selected_topic_id }}&page={{ user_feedbacks.next_page_number }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+.form-select {
+    border-radius: 8px;
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.rating-info {
+    font-size: 0.9rem;
+}
+
+.emotion {
+    color: #6c757d;
+}
+
+.text-warning {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %} 

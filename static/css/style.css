@@ -1,0 +1,212 @@
+:root {
+    --primary-blue: #2196F3;
+    --primary-blue-dark: #1976D2;
+    --primary-blue-light: #BBDEFB;
+    --gray-dark: #455A64;
+    --gray-medium: #90A4AE;
+    --gray-light: #ECEFF1;
+    --white: #FFFFFF;
+    --danger: #FF5252;
+    --success: #4CAF50;
+    --warning: #FFC107;
+}
+
+body {
+    background-color: var(--gray-light);
+    color: var(--gray-dark);
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+}
+
+/* Navbar Styling */
+.navbar {
+    background-color: var(--white);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    color: var(--primary-blue) !important;
+    font-weight: 500;
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 0.5rem 0;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    color: var(--gray-dark);
+    transition: all 0.2s ease-in-out;
+}
+
+.dropdown-item:hover {
+    background-color: var(--gray-light);
+    color: var(--primary-blue);
+}
+
+.dropdown-item i {
+    width: 20px;
+    margin-right: 8px;
+    color: var(--primary-blue);
+}
+
+.nav-link.dropdown-toggle::after {
+    vertical-align: middle;
+    margin-left: 0.5em;
+}
+
+.dropdown-toggle:hover {
+    color: var(--primary-blue);
+}
+
+/* Logout button styling */
+.nav-link.border-0.bg-transparent {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.nav-link.border-0.bg-transparent:hover {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+/* Card Styling */
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-title {
+    color: var(--primary-blue);
+    font-weight: 500;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.2s ease-in-out;
+    text-transform: none;
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--primary-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-blue-dark);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+}
+
+.btn-warning {
+    background-color: var(--warning);
+    color: var(--gray-dark);
+}
+
+.btn-success {
+    background-color: var(--success);
+}
+
+.btn-info {
+    background-color: var(--primary-blue-light);
+    color: var(--primary-blue-dark);
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid var(--gray-medium);
+    padding: 8px 12px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+}
+
+/* Container Spacing */
+.container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Alert Styling */
+.alert {
+    border: none;
+    border-radius: 6px;
+    padding: 1rem;
+}
+
+.alert-info {
+    background-color: var(--primary-blue-light);
+    color: var(--primary-blue-dark);
+}
+
+/* Image Styling */
+.card-img-top {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    object-fit: cover;
+    height: 200px;
+}
+
+/* Icon Styling */
+.fas {
+    margin-right: 8px;
+}
+
+/* Grid Gap */
+.gap-2 {
+    gap: 0.75rem !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* Feedback cards */
+.feedback-card {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}
+
+/* Emotion badges */
+.emotion-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+/* Charts container */
+.chart-container {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}

@@ -4,48 +4,153 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-12">
-            <h3>Quản lý sản phẩm</h3>
-            <form method="get" class="mb-4" id="topic-filter-form">
-                <div class="row g-2 align-items-center">
-                    <div class="col-auto">
-                        <label for="topic-select" class="col-form-label">Lọc theo đề tài:</label>
-                    </div>
-                    <div class="col-auto">
-                        <select name="topic" id="topic-select" class="form-select" onchange="document.getElementById('topic-filter-form').submit();">
-                            <option value="all" {% if selected_topic_id == 'all' %}selected{% endif %}>Tất cả đề tài</option>
-                            {% for topic in topics %}
-                                <option value="{{ topic.id }}" {% if selected_topic_id == topic.id|stringformat:'s' %}selected{% endif %}>{{ topic.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>{% if user.is_superuser %}Quản lý tất cả sản phẩm{% else %}Quản lý sản phẩm của tôi{% endif %}</h2>
+                <a href="{% url 'accounts:select_topic' %}" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Thêm sản phẩm mới
+                </a>
+            </div>
+
+            <!-- Filter by topic -->
+            <div class="mb-4">
+                <label class="form-label">Lọc theo đề tài:</label>
+                <select class="form-select" onchange="window.location.href='?topic=' + this.value + '&page={{ products.number }}'">
+                    <option value="all" {% if selected_topic_id == 'all' %}selected{% endif %}>Tất cả đề tài</option>
+                    {% for topic in topics %}
+                    <option value="{{ topic.id }}" {% if selected_topic_id == topic.id|stringformat:"s" %}selected{% endif %}>
+                        {{ topic.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-            </form>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if products %}
             <div class="row">
                 {% for product in products %}
-                <div class="col-md-6 mb-4">
+                <div class="col-md-3 mb-4">
                     <div class="card h-100">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ product.name }}</h5>
-                            <p class="card-text">{{ product.description }}</p>
-                            <p class="card-text"><strong>Giá:</strong> {{ product.price }} VNĐ</p>
-                            <p class="card-text"><small class="text-muted">Đăng ngày: {{ product.created_at|date:"d/m/Y" }}</small></p>
-                            <div class="d-grid gap-2 mb-2">
-                                <a href="{% url 'accounts:product_feedback' product.id %}" class="btn btn-info">Xem tất cả đánh giá</a>
-                                <a href="{% url 'accounts:edit_product' product.id %}" class="btn btn-warning">Sửa sản phẩm</a>
-                                <a href="{% url 'accounts:delete_product' product.id %}" class="btn btn-danger">Xóa sản phẩm</a>
+                            <p class="card-text">{{ product.description|truncatewords:20 }}</p>
+                            {% if user.is_superuser %}
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> Người tạo: {{ product.creator.username }}
+                                </small>
+                            </p>
+                            {% endif %}
+                            <div class="mt-3">
+                                <a href="{% url 'accounts:view_feedback' product.id %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-comments"></i> Xem đánh giá
+                                </a>
+                                <a href="{% url 'accounts:product_stats' product.id %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-chart-bar"></i> Thống kê
+                                </a>
+                                <div class="mt-2">
+                                    <a href="{% url 'accounts:edit_product' product.id %}" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </a>
+                                    <a href="{% url 'accounts:delete_product' product.id %}" class="btn btn-danger btn-sm" 
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {% empty %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <p class="text-center mb-0">Bạn chưa đăng sản phẩm nào.</p>
-                    </div>
-                </div>
+                {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                </div><div class="row">
+                {% endif %}
                 {% endfor %}
             </div>
+
+            <!-- Pagination -->
+            {% if products.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}&topic={{ selected_topic_id }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in products.paginator.page_range %}
+                    <li class="page-item {% if num == products.number %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}&topic={{ selected_topic_id }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}&topic={{ selected_topic_id }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">Chưa có sản phẩm nào. Hãy thêm sản phẩm mới!</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin: 0.2rem;
+}
+
+.btn i {
+    margin-right: 0.25rem;
+}
+</style>
 {% endblock %} 

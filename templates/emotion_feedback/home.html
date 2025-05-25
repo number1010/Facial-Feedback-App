@@ -2,34 +2,191 @@
 
 {% block title %}Home - Facial Feedback{% endblock %}
 
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 5rem 0;
+    border-radius: 0 0 2rem 2rem;
+    margin-bottom: 4rem;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: #4a5568;
+    margin-bottom: 3rem;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+    border: none;
+    margin-bottom: 2rem;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: #ebf4ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.feature-icon i {
+    font-size: 1.5rem;
+    color: #4299e1;
+}
+
+.steps-list {
+    list-style: none;
+    padding: 0;
+    counter-reset: step-counter;
+}
+
+.steps-list li {
+    position: relative;
+    padding: 1rem 0 1rem 3.5rem;
+    counter-increment: step-counter;
+    margin-bottom: 1rem;
+}
+
+.steps-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #4299e1;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.start-btn {
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+    border-radius: 0.75rem;
+    background: #4299e1;
+    border: none;
+    box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+    transition: all 0.3s ease;
+}
+
+.start-btn:hover {
+    background: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(66, 153, 225, 0.3);
+}
+
+.privacy-section {
+    background: #f7fafc;
+    padding: 3rem;
+    border-radius: 1rem;
+    margin-top: 4rem;
+}
+
+.privacy-icon {
+    font-size: 2.5rem;
+    color: #4299e1;
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-        <h1 class="mb-4">Welcome to Facial Feedback</h1>
-        <p class="lead">Help us improve by sharing your emotions through facial expressions!</p>
-        
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">How it works</h5>
-                <ol class="text-start">
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 text-center">
+                <h1 class="hero-title">Welcome to Facial Feedback</h1>
+                <p class="hero-subtitle">Help us improve by sharing your emotions through facial expressions!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Features Section -->
+            <div class="row mb-5">
+                <div class="col-md-4">
+                    <div class="feature-card p-4 text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <h4>Real-time Capture</h4>
+                        <p class="text-muted">Advanced facial recognition technology for accurate emotion detection</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card p-4 text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4>AI Analysis</h4>
+                        <p class="text-muted">State-of-the-art AI algorithms to analyze your emotional expressions</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card p-4 text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Privacy First</h4>
+                        <p class="text-muted">Your data is processed securely and never stored without consent</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How it Works Section -->
+            <div class="card feature-card p-5">
+                <h2 class="text-center mb-4">How it works</h2>
+                <ul class="steps-list">
                     <li>We'll access your camera to capture your facial expressions</li>
                     <li>Our AI will analyze your emotions in real-time</li>
                     <li>You'll provide feedback about your experience</li>
                     <li>Your responses help us improve our services</li>
-                </ol>
+                </ul>
                 
-                <a href="{% url 'emotion_feedback:capture' %}" class="btn btn-primary btn-lg mt-3">
-                    <i class="fas fa-camera me-2"></i>Start Feedback Session
-                </a>
+                <div class="text-center mt-4">
+                    <a href="{% url 'emotion_feedback:capture' %}" class="btn btn-primary btn-lg start-btn">
+                        <i class="fas fa-camera me-2"></i>Start Feedback Session
+                    </a>
+                </div>
             </div>
-        </div>
 
-        <div class="mt-4">
-            <h3>Privacy Notice</h3>
-            <p class="text-muted">
-                Your privacy is important to us. All facial data is processed in real-time and we only store 
-                anonymized emotion data. No actual images are permanently stored without your explicit consent.
-            </p>
+            <!-- Privacy Notice -->
+            <div class="privacy-section text-center">
+                <i class="fas fa-lock privacy-icon"></i>
+                <h3>Privacy Notice</h3>
+                <p class="text-muted mb-0">
+                    Your privacy is important to us. All facial data is processed in real-time and we only store 
+                    anonymized emotion data. No actual images are permanently stored without your explicit consent.
+                </p>
+            </div>
         </div>
     </div>
 </div>

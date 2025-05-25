@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- Thêm Font Awesome vào đầu template -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -13,13 +16,88 @@
                     <p><strong>Giá:</strong> {{ product.price }} VNĐ</p>
                     <p><strong>Ngày đăng:</strong> {{ product.created_at|date:"d/m/Y" }}</p>
                     <hr>
+
+                    <!-- Filter Controls -->
+                    <div class="filter-section mb-4">
+                        <form method="get" class="d-flex align-items-end gap-3">
+                            <div class="filter-group">
+                                <label class="small text-muted mb-1">Đánh giá</label>
+                                <select name="rating" class="form-select form-select-sm rating-select">
+                                    <option value="">Tất cả đánh giá</option>
+                                    <option value="5" {% if current_rating == "5" %}selected{% endif %}>5 ★★★★★</option>
+                                    <option value="4" {% if current_rating == "4" %}selected{% endif %}>4 ★★★★☆</option>
+                                    <option value="3" {% if current_rating == "3" %}selected{% endif %}>3 ★★★☆☆</option>
+                                    <option value="2" {% if current_rating == "2" %}selected{% endif %}>2 ★★☆☆☆</option>
+                                    <option value="1" {% if current_rating == "1" %}selected{% endif %}>1 ★☆☆☆☆</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label class="small text-muted mb-1">Cảm xúc</label>
+                                <select name="emotion" class="form-select form-select-sm">
+                                    <option value="all">Tất cả cảm xúc</option>
+                                    {% for emotion in unique_emotions %}
+                                        <option value="{{ emotion }}" {% if current_emotion == emotion %}selected{% endif %}>
+                                            {% if emotion == 'happy' %}Vui vẻ 😊
+                                            {% elif emotion == 'sad' %}Buồn 😢
+                                            {% elif emotion == 'angry' %}Giận dữ 😠
+                                            {% elif emotion == 'surprised' %}Ngạc nhiên 😲
+                                            {% elif emotion == 'fearful' %}Sợ hãi 😨
+                                            {% elif emotion == 'disgusted' %}Ghê tởm 🤢
+                                            {% else %}Bình thường 😐
+                                            {% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            {% if current_rating or current_emotion %}
+                                <a href="{% url 'accounts:product_feedback' product.id %}" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-times"></i> Xóa bộ lọc
+                                </a>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-filter"></i> Áp dụng
+                                </button>
+                            {% endif %}
+                        </form>
+                    </div>
+
                     <h5>Danh sách đánh giá:</h5>
                     {% if feedbacks %}
                         {% for feedback in feedbacks %}
                         <div class="card mb-3">
                             <div class="card-body">
                                 <p class="mb-1">{{ feedback.comment }}</p>
-                                <small class="text-muted">Đánh giá: {{ feedback.rating }}/5 | Ngày: {{ feedback.submitted_at|date:"d/m/Y H:i" }}</small>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="rating-stars me-2">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= feedback.rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="fas fa-star text-secondary"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        {% if feedback.emotion == 'happy' %}
+                                            <span class="badge bg-success">Vui vẻ 😊</span>
+                                        {% elif feedback.emotion == 'sad' %}
+                                            <span class="badge bg-info">Buồn 😢</span>
+                                        {% elif feedback.emotion == 'angry' %}
+                                            <span class="badge bg-danger">Giận dữ 😠</span>
+                                        {% elif feedback.emotion == 'surprised' %}
+                                            <span class="badge bg-warning">Ngạc nhiên 😲</span>
+                                        {% elif feedback.emotion == 'fearful' %}
+                                            <span class="badge bg-dark">Sợ hãi 😨</span>
+                                        {% elif feedback.emotion == 'disgusted' %}
+                                            <span class="badge bg-secondary">Ghê tởm 🤢</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">Bình thường 😐</span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ feedback.submitted_at|date:"d/m/Y H:i" }}</small>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -34,4 +112,56 @@
         </div>
     </div>
 </div>
+
+<style>
+.badge {
+    font-size: 0.9em;
+    padding: 0.5em 0.7em;
+}
+
+.filter-section {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.filter-group {
+    min-width: 150px;
+}
+
+.form-select-sm {
+    font-size: 0.875rem;
+}
+
+.btn-sm {
+    min-width: 100px;
+}
+
+.rating-stars {
+    font-size: 1rem;
+}
+
+.rating-stars .fa-star {
+    margin-right: 2px;
+}
+
+/* Màu sao */
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-secondary {
+    color: #dee2e6 !important;
+}
+
+/* Style cho rating select */
+.rating-select {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.rating-select option {
+    font-family: inherit;
+    padding: 8px;
+}
+</style>
 {% endblock %} 

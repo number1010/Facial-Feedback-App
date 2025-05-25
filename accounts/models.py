@@ -27,7 +27,7 @@ class Product(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name="Đề tài")
     name = models.CharField(max_length=200, verbose_name="Tên sản phẩm")
     description = models.TextField(verbose_name="Mô tả")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Giá")
+    price = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Giá")
     image = models.ImageField(upload_to='products/', verbose_name="Hình ảnh")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo")
 
