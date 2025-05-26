@@ -161,6 +161,16 @@ def start_session(request):
     )
     return JsonResponse({'session_id': session.session_id})
 
+def detect_face(image_data):
+    # Giả sử image_data là base64 string
+    image_bytes = base64.b64decode(image_data.split(',')[1])
+    nparr = np.frombuffer(image_bytes, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    return len(faces) > 0
+
 @csrf_exempt
 @require_POST
 def save_emotion(request):
@@ -168,6 +178,10 @@ def save_emotion(request):
         data = json.loads(request.body)
         image_data = data.get('image')
         session_id = data.get('session_id')
+
+        if not detect_face(image_data):
+            return JsonResponse({'status': 'error', 'message': 'Không phát hiện được khuôn mặt. Vui lòng thử lại.'})
+        
         if not image_data or not session_id:
             return JsonResponse({'status': 'error', 'message': 'Missing image or session_id'})
         
@@ -295,7 +309,9 @@ def product_detail(request, product_id):
         comment = request.POST.get('comment')
         emotion = request.POST.get('emotion')
         emotion_image = request.POST.get('emotion_image')
-        
+        if not rating or not comment:
+            messages.error(request, "Vui lòng đánh giá đầy đủ thông tin (số sao và nhận xét)!")
+            return redirect(request.path)
         if rating and emotion:
             try:
                 # Save emotion image
@@ -330,7 +346,7 @@ def product_detail(request, product_id):
             except Exception as e:
                 print(f"Error saving feedback: {e}")  # Debug print
                 messages.error(request, 'Có lỗi xảy ra khi lưu đánh giá. Vui lòng thử lại!')
-    
+        
     return render(request, 'emotion_feedback/product_detail.html', {
         'product': product,
         'session_id': str(uuid.uuid4())  # Generate new session ID for emotion capture

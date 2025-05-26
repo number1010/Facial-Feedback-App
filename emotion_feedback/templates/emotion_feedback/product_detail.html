@@ -10,15 +10,15 @@
                 <div class="card-body p-4">
                     <div class="row g-4 align-items-center">
                         <div class="col-md-5 text-center">
-                            {% if product.image %}
+            {% if product.image %}
                                 <img src="{{ product.image.url }}" class="img-fluid rounded-4 border product-image-main mb-3" alt="{{ product.name }}">
                             {% else %}
                                 <div class="no-image d-flex flex-column align-items-center justify-content-center rounded-4 border mb-3" style="height: 220px; background: #f4f6fb;">
                                     <i class="fas fa-image fa-3x text-muted"></i>
                                     <p class="text-muted mt-2">Không có hình ảnh</p>
                                 </div>
-                            {% endif %}
-                        </div>
+            {% endif %}
+        </div>
                         <div class="col-md-7">
                             <h1 class="product-title mb-3 fw-bold text-dark">{{ product.name }}</h1>
                             <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
@@ -62,15 +62,21 @@
                         <div class="rating-section mb-4">
                             <label class="form-label mb-2 fw-semibold">Đánh giá của bạn:</label>
                             <div class="rating justify-content-center">
-                                {% for i in "54321" %}
-                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
-                                <label for="star{{ i }}"><i class="fas fa-star"></i></label>
-                                {% endfor %}
+                                <input type="radio" name="rating" value="5" id="star5">
+                                <label for="star5"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="4" id="star4">
+                                <label for="star4"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="3" id="star3">
+                                <label for="star3"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="2" id="star2">
+                                <label for="star2"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" value="1" id="star1">
+                                <label for="star1"><i class="fas fa-star"></i></label>
                             </div>
                         </div>
                         <div class="mb-4">
                             <label for="comment" class="form-label fw-semibold">Nhận xét:</label>
-                            <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-success btn-lg fw-bold">
@@ -304,38 +310,38 @@ document.addEventListener('DOMContentLoaded', function() {
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/jpeg');
+        const imageData = canvas.toDataURL('image/jpeg');
             capturedImage.src = imageData;
             capturedImage.style.display = 'block';
             video.style.display = 'none';
             capturePhotoBtn.style.display = 'none';
             retakePhotoBtn.style.display = 'block';
             showSuccess('Đang phân tích cảm xúc...');
-            fetch('{% url "emotion_feedback:save-emotion" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({
-                    image: imageData,
-                    session_id: '{{ session_id }}'
-                })
+        fetch('{% url "emotion_feedback:save-emotion" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                image: imageData,
+                session_id: '{{ session_id }}'
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
                     showSuccess(`Cảm xúc: ${data.emotion}`);
-                    emotionInput.value = data.emotion;
-                    emotionImageInput.value = imageData;
-                    feedbackForm.style.display = 'block';
+                emotionInput.value = data.emotion;
+                emotionImageInput.value = imageData;
+                feedbackForm.style.display = 'block';
                     stopCamera();
-                } else {
+            } else {
                     showError('Không thể nhận diện cảm xúc. Vui lòng thử lại.');
                     retakePhotoBtn.click();
-                }
-            })
-            .catch(error => {
+            }
+        })
+        .catch(error => {
                 showError('Có lỗi xảy ra. Vui lòng thử lại.');
                 retakePhotoBtn.click();
             });
@@ -367,4 +373,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %} 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const feedbackForm = document.getElementById('feedback-form');
+        if (feedbackForm) {
+            feedbackForm.addEventListener('submit', function(e) {
+                const ratingChecked = feedbackForm.querySelector('input[name="rating"]:checked');
+                const comment = document.getElementById('comment').value.trim();
+                if (!ratingChecked || !comment) {
+                    e.preventDefault();
+                    alert("Vui lòng đánh giá đầy đủ thông tin (số sao và nhận xét)!");
+                    return false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
